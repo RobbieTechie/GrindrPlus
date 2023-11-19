@@ -102,11 +102,11 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }
 
-                    try {
+                    /*try {
                         Hooks.unlimitedTaps()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
                     try {
                         Hooks.removeExpirationOnExpiringPhotos()
@@ -185,7 +185,7 @@ class Hooker : IXposedHookLoadPackage {
     }
 
     companion object {
-        const val TARGET_PKG_VERSION_NAME = "9.12.0"
+        const val TARGET_PKG_VERSION_NAME = "9.16.1"
 
         var pkgParam: LoadPackageParam by InitOnce()
         var appContext: Context by InitOnce()

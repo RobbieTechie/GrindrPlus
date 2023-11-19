@@ -245,7 +245,17 @@ object Hooks {
                 userSessionImpl,
                 GApp.storage.IUserSession_.hasFeature_feature,
                 class_Feature,
-                RETURN_TRUE
+                object :  XC_MethodReplacement() {
+                    override fun replaceHookedMethod(param: MethodHookParam): Any {
+                        // For whatever reason, enabling this feature causes the "Send Video"
+                        // button to disappear. This does not seem to affect screenshots so we
+                        // just disable this feature.
+                        if (param.args[0].toString() == "DisableScreenshot") {
+                            return false
+                        }
+                        return true
+                    }
+                }
             )
 
             findAndHookMethod(
@@ -321,7 +331,7 @@ object Hooks {
             RETURN_TRUE
         )
 
-        val class_IUserSession = findClass(
+        /*val class_IUserSession = findClass(
             GApp.storage.IUserSession,
             Hooker.pkgParam.classLoader
         )
@@ -331,34 +341,46 @@ object Hooks {
             GApp.model.Feature_.isGranted,
             class_IUserSession,
             RETURN_TRUE
-        )
+        )*/
 
         findAndHookMethod(
             "com.grindrapp.android.flags.featureflags.g",
             Hooker.pkgParam.classLoader,
-            "b",
+            "isEnabled",
             object :  XC_MethodReplacement() {
                 override fun replaceHookedMethod(param: MethodHookParam): Any {
-                    val feature = getObjectField(param.thisObject, "b") as String
+                    val feature = getObjectField(param.thisObject, "featureFlagName") as String
                     return when (feature) {
-                        "profile-redesign-20230214" -> true
+                        "profile-redesign-20230214" -> false
+                        "offer" -> true
                         "notification-action-chat-20230206" -> true
                         "gender-updates" -> true
-                        "gender-filter" -> true
                         "gender-exclusion" -> true
+                        "favorite-profile-notes-server" -> false
+                        "verbose-ad-analytics" -> false
                         "calendar-ui" -> true
                         "vaccine-profile-field" -> true
+                        "download-my-data" -> true
+                        "upgrade-prompt-interval" -> false
+                        "custom-dns" -> true
+                        "cookie-tap" -> false
+                        "takemehome-button" -> true
+                        "canceled-screen" -> true
                         "tag-search" -> true
                         "approximate-distance" -> true
+                        "store-default-product" -> false
                         "spectrum_solicitation_sex" -> true
                         "allow-mock-location" -> true
                         "spectrum-solicitation-of-drugs" -> true
-                        "reporting-lag-time" -> true
-                        "side-profile-link" -> true
                         "sift-kill-switch" -> true
-                        "canceled-screen" -> true
-                        "takemehome-button" -> true
-                        "download-my-data" -> true
+                        "side-profile-link" -> true
+                        "ads-quality-edu" -> false
+                        "ad-identifier" -> false
+                        "reporting-lag-time" -> true
+                        "intro-offer-free-trial-20221222" -> true
+                        "gender-filter" -> true
+                        "chat-interstitial" -> false
+                        "ad-backfill" -> false
                         "face-auth-android" -> true
                         else -> XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)
                     }
@@ -414,7 +436,7 @@ object Hooks {
         findAndHookMethod(
             "com.grindrapp.android.profile.experiments.InaccessibleProfileManager",
             Hooker.pkgParam.classLoader,
-            "b",
+            "a",
             RETURN_TRUE
         )
 
@@ -422,7 +444,7 @@ object Hooks {
         findAndHookMethod(
             "com.grindrapp.android.profile.experiments.InaccessibleProfileManager",
             Hooker.pkgParam.classLoader,
-            "c",
+            "b",
             Int::class.javaPrimitiveType,
             Int::class.javaObjectType,
             Int::class.javaObjectType,
@@ -636,7 +658,7 @@ object Hooks {
         )
 
         findAndHookMethod(
-            "com.grindrapp.android.ui.profileV2.ChatTapsQuickbarView",
+            "com.grindrapp.android.ui.profileV2.ProfileQuickbarView",
             Hooker.pkgParam.classLoader,
             "u",
             Boolean::class.javaPrimitiveType,
