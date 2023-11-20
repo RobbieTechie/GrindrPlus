@@ -789,7 +789,7 @@ object Hooks {
                         GApp.persistence.model.ChatMessage_.getType
                     ) as String
                     val syntheticMessage = when (type) {
-                        "block" -> "[You have been blocked. Profile ID: " + "]"
+                        "block" -> "[You have been blocked this profile]"
                         "unblock" -> "[You have been unblocked.]"
                         else -> null
                     }
