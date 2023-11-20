@@ -19,6 +19,7 @@ import com.eljaviluki.grindrplus.Constants.Returns.RETURN_FALSE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_INTEGER_MAX_VALUE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_LONG_MAX_VALUE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_TRUE
+import com.eljaviluki.grindrplus.Constants.Returns.RETURN_ZERO
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_UNIT
 import com.eljaviluki.grindrplus.Obfuscation.GApp
 import de.robv.android.xposed.XC_MethodHook
@@ -351,7 +352,7 @@ object Hooks {
                 override fun replaceHookedMethod(param: MethodHookParam): Any {
                     val feature = getObjectField(param.thisObject, "featureFlagName") as String
                     return when (feature) {
-                        "profile-redesign-20230214" -> true
+                        "profile-redesign-20230214" -> false
                         "offer" -> true
                         "notification-action-chat-20230206" -> true
                         "gender-updates" -> true
@@ -396,7 +397,7 @@ object Hooks {
             RETURN_FALSE
         )
 
-        /*val class_UpsellsV8 = findClass(
+        val class_UpsellsV8 = findClass(
             GApp.model.UpsellsV8,
             Hooker.pkgParam.classLoader
         )
@@ -428,7 +429,7 @@ object Hooks {
             class_Inserts,
             GApp.model.Inserts_.getMpuXtra,
             RETURN_ZERO
-        )*/
+        )
     }
 
     fun unlimitedProfiles() {
@@ -452,6 +453,7 @@ object Hooks {
             "com.grindrapp.android.base.model.profile.ReferrerType",
             RETURN_FALSE
         )
+
 
         //Remove all ads and upsells from the cascade
         findAndHookMethod(

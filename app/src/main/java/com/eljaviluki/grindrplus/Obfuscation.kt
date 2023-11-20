@@ -57,7 +57,7 @@ object Obfuscation {
 
         object manager {
             private const val _manager = Constants.GRINDR_PKG + ".manager"
-            const val BlockInteractor = "$_manager.o"
+            const val BlockInteractor = "$_manager.n"
 
             object persistence {
                 private const val _persistence = "$_manager.persistence"
@@ -252,7 +252,7 @@ object Obfuscation {
                 const val ProfilesViewModel = "$_profileV2.ProfilesViewModel"
 
                 object ProfilesViewModel_ {
-                    const val recordProfileViewsForViewedMeService = "p2"
+                    const val recordProfileViewsForViewedMeService = "r2"
                 }
 
                 object model {
