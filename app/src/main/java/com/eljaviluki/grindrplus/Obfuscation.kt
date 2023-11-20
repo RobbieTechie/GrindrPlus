@@ -258,10 +258,10 @@ object Obfuscation {
                 object model {
                     private const val _model = "$_profileV2.model"
 
-                    const val Profile = "$_model.h"
+                    const val Profile = "$_model.ProfileViewState"
 
                     object Profile_ {
-                        const val getProfileId = "c0"
+                        const val getProfileId = "getProfileId"
                     }
                 }
             }

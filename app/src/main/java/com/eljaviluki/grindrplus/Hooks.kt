@@ -128,14 +128,14 @@ object Hooks {
                 ) //R.color.grindr_pure_white
 
                 override fun afterHookedMethod(param: MethodHookParam) {
-                    fieldsViewInstance = param.thisObject
+                        fieldsViewInstance = param.thisObject
 
-                    val profileId = callMethod(
-                        param.args[0],
-                        GApp.ui.profileV2.model.Profile_.getProfileId
-                    ) as String
+                        val profileId = callMethod(
+                            param.args[0],
+                            GApp.ui.profileV2.model.Profile_.getProfileId
+                        ) as String
 
-                    param.args[0]?.let {
+                        param.args[0]?.let {
                         //val profile = Profile(it)
                         addProfileFieldUi("Profile ID", profileId, 0).also { view ->
                             view.setOnLongClickListener {
@@ -453,7 +453,6 @@ object Hooks {
             "com.grindrapp.android.base.model.profile.ReferrerType",
             RETURN_FALSE
         )
-
 
         //Remove all ads and upsells from the cascade
         findAndHookMethod(
@@ -790,7 +789,7 @@ object Hooks {
                         GApp.persistence.model.ChatMessage_.getType
                     ) as String
                     val syntheticMessage = when (type) {
-                        "block" -> "[You have been blocked.]"
+                        "block" -> "[You have been blocked. Profile ID: " + "]"
                         "unblock" -> "[You have been unblocked.]"
                         else -> null
                     }
@@ -886,7 +885,7 @@ object Hooks {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     val otherProfileId = param.args[0] as? String
                     if (otherProfileId != null) {
-                        logChatMessage(otherProfileId, "[You have unblocked this profile.]")
+                        logChatMessage(otherProfileId, "[You have unblocked this profile.]" + otherProfileId)
                     }
                 }
             }

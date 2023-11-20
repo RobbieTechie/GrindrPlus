@@ -172,9 +172,9 @@ class Hooker : IXposedHookLoadPackage {
                         Hooks.addExtraProfileFields()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
-                    try {
+                    /*try {
                         Hooks.allowSomeExperiments()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
@@ -185,7 +185,7 @@ class Hooker : IXposedHookLoadPackage {
     }
 
     companion object {
-        const val TARGET_PKG_VERSION_NAME = "9.17.2"
+        const val TARGET_PKG_VERSION_NAME = "9.17.3"
 
         var pkgParam: LoadPackageParam by InitOnce()
         var appContext: Context by InitOnce()
