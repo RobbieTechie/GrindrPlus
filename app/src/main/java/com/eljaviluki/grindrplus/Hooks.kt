@@ -351,7 +351,7 @@ object Hooks {
                 override fun replaceHookedMethod(param: MethodHookParam): Any {
                     val feature = getObjectField(param.thisObject, "featureFlagName") as String
                     return when (feature) {
-                        "profile-redesign-20230214" -> false
+                        "profile-redesign-20230214" -> true
                         "offer" -> true
                         "notification-action-chat-20230206" -> true
                         "gender-updates" -> true

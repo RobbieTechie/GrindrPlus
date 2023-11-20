@@ -209,19 +209,19 @@ object Obfuscation {
             const val id = "$_R.s0"
 
             object id_ {
-                const val fragment_favorite_recycler_view = "ob"
-                const val profile_distance = "fk"
-                const val profile_online_now_icon = "tl"
-                const val profile_last_seen = "bl"
-                const val profile_note_icon = "rl"
-                const val profile_display_name = "ak"
+                const val fragment_favorite_recycler_view = "rb"
+                const val profile_distance = "ik"
+                const val profile_online_now_icon = "wl"
+                const val profile_last_seen = "el"
+                const val profile_note_icon = "ul"
+                const val profile_display_name = "dk"
             }
         }
 
         object storage {
             private const val _storage = Constants.GRINDR_PKG + ".storage"
 
-            const val UserSession = "$_storage.r0"
+            const val UserSession = "$_storage.q0"
 
             const val IUserSession = "$_storage.UserSession"
 
