@@ -163,11 +163,11 @@ class Hooker : IXposedHookLoadPackage {
                     }*/
 
 // NEEDS MORE UPDATES
-//                    try {
-//                        Hooks.disableAnalytics()
-//                    } catch (e: Exception) {
-//                        e.message?.let { Logger.xLog(it) }
-//                    }
+                    /*try {
+                        Hooks.disableAnalytics()
+                    } catch (e: Exception) {
+                        e.message?.let { Logger.xLog(it) }
+                    }*/
 
                     /*try {
                         Hooks.addExtraProfileFields()
