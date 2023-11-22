@@ -26,17 +26,17 @@ class Hooker : IXposedHookLoadPackage {
 
         //This is a quick and dirty fix, but these should be called before the application context is created.
 
-        try {
-            Hooks.storeChatMessageManager()
-        } catch (e: Exception) {
-            e.message?.let { Logger.xLog(it) }
-        }
+//        try {
+//            Hooks.storeChatMessageManager()
+//        } catch (e: Exception) {
+//            e.message?.let { Logger.xLog(it) }
+//        }
 
-        try {
-            Hooks.localSavedPhrases()
-        } catch (e: Exception) {
-            e.message?.let { Logger.xLog(it) }
-        }
+//        try {
+//            Hooks.localSavedPhrases()
+//        } catch (e: Exception) {
+//            e.message?.let { Logger.xLog(it) }
+//        }
 
         findAndHookMethod(
             Application::class.java,
@@ -53,17 +53,17 @@ class Hooker : IXposedHookLoadPackage {
                         return
                     }
 
-                    try {
+                    /*try {
                         Hooks.unlimitedProfiles()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
-                    try {
+                    /*try {
                         Hooks.allowScreenshotsHook()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
                     try {
                         Hooks.allowMockProvider()
@@ -83,24 +83,24 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }
 
-                    try {
+                    /*try {
                         Hooks.allowVideocallsOnEmptyChats()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
-                    try {
+                    /*try {
                         //I've set this to max 3 min. If we make an UI for Hook Settings, we'll let the user to change this.
                         Hooks.hookOnlineIndicatorDuration(3.minutes)
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
-                    try {
+                    /*try {
                         Hooks.unlimitedExpiringPhotos()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
                     /*try {
                         Hooks.unlimitedTaps()
@@ -108,29 +108,29 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }*/
 
-                    try {
+                    /*try {
                         Hooks.removeExpirationOnExpiringPhotos()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
-                    try {
+                    /*try {
                         Hooks.preventRecordProfileViews()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
-                    try {
+                    /*try {
                         Hooks.makeMessagesAlwaysRemovable()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
-                    try {
+                    /*try {
                         Hooks.keepChatsOfBlockedProfiles()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
                     try {
                         Hooks.showBlocksInChat()
@@ -138,43 +138,44 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }
 
-                    try {
-                        Hooks.disableAutomaticMessageDeletion()
-                    } catch (e: Exception) {
-                        e.message?.let { Logger.xLog(it) }
-                    }
-
-                    try {
-                        Hooks.dontSendTypingIndicator()
-                    } catch (e: Exception) {
-                        e.message?.let { Logger.xLog(it) }
-                    }
-
-                    try {
-                        Hooks.dontSendChatMarkers()
-                    } catch (e: Exception) {
-                        e.message?.let { Logger.xLog(it) }
-                    }
-
-                    try {
-                        Hooks.useThreeColumnLayoutForFavorites()
-                    } catch (e: Exception) {
-                        e.message?.let { Logger.xLog(it) }
-                    }
-
-                    try {
-                        Hooks.disableAnalytics()
-                    } catch (e: Exception) {
-                        e.message?.let { Logger.xLog(it) }
-                    }
-
                     /*try {
-                        Hooks.addExtraProfileFields()
+                        Hooks.disableAutomaticMessageDeletion()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
                     }*/
 
                     /*try {
+                        Hooks.dontSendTypingIndicator()
+                    } catch (e: Exception) {
+                        e.message?.let { Logger.xLog(it) }
+                    }*/
+
+                    /*try {
+                        Hooks.dontSendChatMarkers()
+                    } catch (e: Exception) {
+                        e.message?.let { Logger.xLog(it) }
+                    }*/
+
+                    /*try {
+                        Hooks.useThreeColumnLayoutForFavorites()
+                    } catch (e: Exception) {
+                        e.message?.let { Logger.xLog(it) }
+                    }*/
+
+// NEEDS MORE UPDATES
+//                    try {
+//                        Hooks.disableAnalytics()
+//                    } catch (e: Exception) {
+//                        e.message?.let { Logger.xLog(it) }
+//                    }
+
+                    /*try {
+                        Hooks.addExtraProfileFields()
+                    } catch (e: Exception) {
+                        e.message?.let { Logger.xLog(it) }
+                    }
+
+                    try {
                         Hooks.allowSomeExperiments()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
@@ -185,7 +186,7 @@ class Hooker : IXposedHookLoadPackage {
     }
 
     companion object {
-        const val TARGET_PKG_VERSION_NAME = "9.17.3"
+        const val TARGET_PKG_VERSION_NAME = "9.17.4"
 
         var pkgParam: LoadPackageParam by InitOnce()
         var appContext: Context by InitOnce()
