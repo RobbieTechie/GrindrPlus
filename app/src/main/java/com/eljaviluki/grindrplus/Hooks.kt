@@ -19,7 +19,6 @@ import com.eljaviluki.grindrplus.Constants.Returns.RETURN_FALSE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_INTEGER_MAX_VALUE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_LONG_MAX_VALUE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_TRUE
-import com.eljaviluki.grindrplus.Constants.Returns.RETURN_ZERO
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_UNIT
 import com.eljaviluki.grindrplus.Obfuscation.GApp
 import de.robv.android.xposed.XC_MethodHook
@@ -128,14 +127,14 @@ object Hooks {
                 ) //R.color.grindr_pure_white
 
                 override fun afterHookedMethod(param: MethodHookParam) {
-                        fieldsViewInstance = param.thisObject
+                    fieldsViewInstance = param.thisObject
 
-                        val profileId = callMethod(
-                            param.args[0],
-                            GApp.ui.profileV2.model.Profile_.getProfileId
-                        ) as String
+                    val profileId = callMethod(
+                        param.args[0],
+                        GApp.ui.profileV2.model.Profile_.getProfileId
+                    ) as String
 
-                        param.args[0]?.let {
+                    param.args[0]?.let {
                         //val profile = Profile(it)
                         addProfileFieldUi("Profile ID", profileId, 0).also { view ->
                             view.setOnLongClickListener {
@@ -246,17 +245,7 @@ object Hooks {
                 userSessionImpl,
                 GApp.storage.IUserSession_.hasFeature_feature,
                 class_Feature,
-                object :  XC_MethodReplacement() {
-                    override fun replaceHookedMethod(param: MethodHookParam): Any {
-                        // For whatever reason, enabling this feature causes the "Send Video"
-                        // button to disappear. This does not seem to affect screenshots so we
-                        // just disable this feature.
-                        if (param.args[0].toString() == "DisableScreenshot") {
-                            return false
-                        }
-                        return true
-                    }
-                }
+                RETURN_TRUE
             )
 
             findAndHookMethod(
@@ -332,7 +321,7 @@ object Hooks {
             RETURN_TRUE
         )
 
-        /*val class_IUserSession = findClass(
+        val class_IUserSession = findClass(
             GApp.storage.IUserSession,
             Hooker.pkgParam.classLoader
         )
@@ -342,10 +331,10 @@ object Hooks {
             GApp.model.Feature_.isGranted,
             class_IUserSession,
             RETURN_TRUE
-        )*/
+        )
 
-        findAndHookMethod(
-            "com.grindrapp.android.flags.featureflags.g",
+        /*findAndHookMethod(
+            "s5.g",
             Hooker.pkgParam.classLoader,
             "isEnabled",
             object :  XC_MethodReplacement() {
@@ -353,51 +342,48 @@ object Hooks {
                     val feature = getObjectField(param.thisObject, "featureFlagName") as String
                     return when (feature) {
                         "profile-redesign-20230214" -> false
-                        "offer" -> true
                         "notification-action-chat-20230206" -> true
                         "gender-updates" -> true
+                        "gender-filter" -> true
                         "gender-exclusion" -> true
-                        "favorite-profile-notes-server" -> false
-                        "verbose-ad-analytics" -> false
                         "calendar-ui" -> true
                         "vaccine-profile-field" -> true
-                        "download-my-data" -> true
-                        "upgrade-prompt-interval" -> false
-                        "custom-dns" -> true
-                        "cookie-tap" -> false
-                        "takemehome-button" -> true
-                        "canceled-screen" -> true
                         "tag-search" -> true
                         "approximate-distance" -> true
-                        "store-default-product" -> false
                         "spectrum_solicitation_sex" -> true
                         "allow-mock-location" -> true
                         "spectrum-solicitation-of-drugs" -> true
-                        "sift-kill-switch" -> true
-                        "side-profile-link" -> true
-                        "ads-quality-edu" -> false
-                        "ad-identifier" -> false
                         "reporting-lag-time" -> true
-                        "intro-offer-free-trial-20221222" -> true
-                        "gender-filter" -> true
-                        "chat-interstitial" -> false
-                        "ad-backfill" -> false
+                        "side-profile-link" -> true
+                        "sift-kill-switch" -> true
+                        "canceled-screen" -> true
+                        "takemehome-button" -> true
+                        "download-my-data" -> true
                         "face-auth-android" -> true
                         else -> XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)
                     }
                 }
             }
-        )
+        )*/
 
         //Once you uncheck "precise", the option will disappear normally (not sure if that's a bug). This fix prevents that.
-        findAndHookMethod(
-            "com.grindrapp.android.ui.settings.distance.SettingDistanceVisibilityViewModel\$f",
+        findAndHookConstructor(
+            "com.grindrapp.android.ui.settings.distance.SettingDistanceVisibilityViewModel\$e",
             Hooker.pkgParam.classLoader,
-            "e",
-            RETURN_FALSE
+            Int::class.java,
+            Boolean::class.java,
+            Boolean::class.java,
+            Boolean::class.java,
+            Boolean::class.java,
+            Set::class.java,
+            object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam?) {
+                    param?.args?.set(4, false)
+                }
+            }
         )
 
-        val class_UpsellsV8 = findClass(
+        /*val class_UpsellsV8 = findClass(
             GApp.model.UpsellsV8,
             Hooker.pkgParam.classLoader
         )
@@ -429,7 +415,7 @@ object Hooks {
             class_Inserts,
             GApp.model.Inserts_.getMpuXtra,
             RETURN_ZERO
-        )
+        )*/
     }
 
     fun unlimitedProfiles() {
@@ -445,7 +431,7 @@ object Hooks {
         findAndHookMethod(
             "com.grindrapp.android.profile.experiments.InaccessibleProfileManager",
             Hooker.pkgParam.classLoader,
-            "b",
+            "c",
             Int::class.javaPrimitiveType,
             Int::class.javaObjectType,
             Int::class.javaObjectType,
@@ -659,7 +645,7 @@ object Hooks {
         )
 
         findAndHookMethod(
-            "com.grindrapp.android.ui.profileV2.ProfileQuickbarView",
+            "com.grindrapp.android.ui.profileV2.ChatTapsQuickbarView",
             Hooker.pkgParam.classLoader,
             "u",
             Boolean::class.javaPrimitiveType,
@@ -789,7 +775,7 @@ object Hooks {
                         GApp.persistence.model.ChatMessage_.getType
                     ) as String
                     val syntheticMessage = when (type) {
-                        "block" -> "[You have been blocked this profile]"
+                        "block" -> "[You have been blocked.]"
                         "unblock" -> "[You have been unblocked.]"
                         else -> null
                     }
@@ -885,7 +871,7 @@ object Hooks {
                 override fun afterHookedMethod(param: MethodHookParam) {
                     val otherProfileId = param.args[0] as? String
                     if (otherProfileId != null) {
-                        logChatMessage(otherProfileId, "[You have unblocked this profile.]" + otherProfileId)
+                        logChatMessage(otherProfileId, "[You have unblocked this profile.]")
                     }
                 }
             }
@@ -1142,7 +1128,7 @@ object Hooks {
         val createSuccessResult = findMethodExact(
             GApp.network.either.ResultHelper,
             Hooker.pkgParam.classLoader,
-            GApp.network.either.ResultHelper_.createSuccess,
+            "h7.b::b",
             Any::class.java
         )
 

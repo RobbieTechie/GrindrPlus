@@ -26,17 +26,17 @@ class Hooker : IXposedHookLoadPackage {
 
         //This is a quick and dirty fix, but these should be called before the application context is created.
 
-//        try {
-//            Hooks.storeChatMessageManager()
-//        } catch (e: Exception) {
-//            e.message?.let { Logger.xLog(it) }
-//        }
+        /*try {
+            Hooks.storeChatMessageManager()
+        } catch (e: Exception) {
+            e.message?.let { Logger.xLog(it) }
+        }*/
 
-//        try {
-//            Hooks.localSavedPhrases()
-//        } catch (e: Exception) {
-//            e.message?.let { Logger.xLog(it) }
-//        }
+        /*try {
+            Hooks.localSavedPhrases()
+        } catch (e: Exception) {
+            e.message?.let { Logger.xLog(it) }
+        }*/
 
         findAndHookMethod(
             Application::class.java,
@@ -59,11 +59,11 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }*/
 
-                    /*try {
+                    try {
                         Hooks.allowScreenshotsHook()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
                     try {
                         Hooks.allowMockProvider()
@@ -162,12 +162,11 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }*/
 
-// NEEDS MORE UPDATES
-                    /*try {
+                    try {
                         Hooks.disableAnalytics()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
                     /*try {
                         Hooks.addExtraProfileFields()
