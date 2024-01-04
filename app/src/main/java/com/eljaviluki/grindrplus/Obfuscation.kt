@@ -18,7 +18,7 @@ object Obfuscation {
                 const val increaseSavedPhraseClickCount = "H"
             }
 
-            const val PhrasesRestService = "$_api.m"
+            const val PhrasesRestService = "x3.k"
 
             object PhrasesRestService_ {
                 //Annotated with @GET("v3/me/prefs"), returns PhrasesResponse
@@ -26,7 +26,17 @@ object Obfuscation {
             }
 
             //Contains @POST("/v3/logging/mobile/logs")
-            const val AnalyticsRestService = "v3.b"
+            const val AnalyticsRestService = "x3.b"
+
+            const val ProfileRestService = "com.grindrapp.android.api.ProfileRestService"
+
+            object ProfileRestService_ {
+                //Annotated with @POST("v4/views/{profileId}")
+                const val logView = "n"
+
+                //Annotated with @POST("v4/views")
+                const val logViews = "h"
+            }
         }
 
         object base {
@@ -57,15 +67,22 @@ object Obfuscation {
 
         object manager {
             private const val _manager = Constants.GRINDR_PKG + ".manager"
-            const val BlockInteractor = "$_manager.o"
+
+            /*
+            BlockInteractor has multiple coroutines whose state machines are implemented as several subclasses by the Coroutine compiler.
+            These subclasses effectively become independent classes ($ class names) and are renamed by ProGuard.
+            e.g. BlockInteractor$blockstream$2 becomes p6.v
+            So when checking if a call is made by BlockInteractor, we can't rely on a single class name anymore
+             */
+            val BlockInteractor = listOf("p6.a0", "p6.b0", "p6.v", "p6.w", "p6.x", "p6.y", "p6.z")
 
             object persistence {
                 private const val _persistence = "$_manager.persistence"
 
-                const val ChatPersistenceManager = "$_persistence.a"
+                const val ChatPersistenceManager = "v6.a"
 
                 object ChatPersistenceManager_ {
-                    const val deleteConversationsByProfileIds = "r"
+                    const val deleteConversationsByProfileIds = "e"
                 }
             }
         }
@@ -112,12 +129,12 @@ object Obfuscation {
         }
 
         object network {
-            private const val _network = "h7"
+            private const val _network = Constants.GRINDR_PKG + ".network"
 
             object either {
-                private const val _either = "h7"
+                private const val _either = "$_network.either"
 
-                const val ResultHelper = "h7.b"
+                const val ResultHelper = "$_either.b"
 
                 object ResultHelper_ {
                     const val createSuccess = "b"
@@ -165,9 +182,13 @@ object Obfuscation {
 
                 object ChatRepo_ {
                     const val checkMessageForVideoCall = "checkMessageForVideoCall"
-                    const val deleteChatMessageFromLessThanOrEqualToTimestamp = "deleteChatMessageFromLessThanOrEqualToTimestamp"
-                    const val deleteChatMessageFromConversationId = "deleteChatMessageFromConversationId"
-                    const val deleteChatMessageListFromConversationId = "deleteChatMessageListFromConversationId"
+                    const val deleteChatMessageFromLessThanOrEqualToTimestamp =
+                        "deleteChatMessageFromLessThanOrEqualToTimestamp"
+                    const val deleteChatMessageFromConversationId =
+                        "deleteChatMessageFromConversationId"
+                    const val deleteChatMessageListFromConversationId =
+                        "deleteChatMessageListFromConversationId"
+                    const val deleteMessagesByConversationIds = "deleteMessagesByConversationIds"
                 }
 
                 const val ProfileRepo = "$_repository.ProfileRepo"
@@ -202,19 +223,43 @@ object Obfuscation {
             const val color = "$_R.o0"
 
             object color_ {
-                const val grindr_gold_star_gay = "I"
-                const val grindr_pure_white = "X"
+                const val grindr_gold_star_gay = "G"
+                const val grindr_pure_white = "G"
             }
 
             const val id = "$_R.s0"
 
             object id_ {
-                const val fragment_favorite_recycler_view = "i2"
-                const val profile_distance = "Gk"
-                const val profile_online_now_icon = "Ul"
-                const val profile_last_seen = "Cl"
-                const val profile_note_icon = "Sl"
-                const val profile_display_name = "Bk"
+                val fragment_favorite_recycler_view = Hooker.appContext.resources.getIdentifier(
+                    "fragment_favorite_recycler_view",
+                    "id",
+                    Hooker.pkgParam.packageName
+                )
+                val profile_distance = Hooker.appContext.resources.getIdentifier(
+                    "profile_distance",
+                    "id",
+                    Hooker.pkgParam.packageName
+                )
+                val profile_online_now_icon = Hooker.appContext.resources.getIdentifier(
+                    "profile_online_now_icon",
+                    "id",
+                    Hooker.pkgParam.packageName
+                )
+                val profile_last_seen = Hooker.appContext.resources.getIdentifier(
+                    "profile_last_seen",
+                    "id",
+                    Hooker.pkgParam.packageName
+                )
+                val profile_note_icon = Hooker.appContext.resources.getIdentifier(
+                    "profile_note_icon",
+                    "id",
+                    Hooker.pkgParam.packageName
+                )
+                val profile_display_name = Hooker.appContext.resources.getIdentifier(
+                    "profile_display_name",
+                    "id",
+                    Hooker.pkgParam.packageName
+                )
             }
         }
 
@@ -237,6 +282,22 @@ object Obfuscation {
             }
         }
 
+        object profile {
+            val _profile = "com.grindrapp.android.profile"
+
+            object experiments {
+                val _experiments = "$_profile.experiments"
+
+                val InaccessibleProfileManager = "$_experiments.InaccessibleProfileManager"
+
+                object InaccessibleProfileManager_ {
+
+                    val isProfileEnabled = "a"
+                    val shouldShowProfile = "b"
+                }
+            }
+        }
+
         object ui {
             private const val _ui = Constants.GRINDR_PKG + ".ui"
 
@@ -244,6 +305,7 @@ object Obfuscation {
                 private const val _profileV2 = "$_ui.profileV2"
 
                 const val ProfileFieldsView = "$_profileV2.ProfileFieldsView"
+                val ProfileQuickbarView = "$_profileV2.ProfileQuickbarView"
 
                 object ProfileFieldsView_ {
                     const val setProfile = "setProfile"
@@ -252,16 +314,16 @@ object Obfuscation {
                 const val ProfilesViewModel = "$_profileV2.ProfilesViewModel"
 
                 object ProfilesViewModel_ {
-                    const val recordProfileViewsForViewedMeService = "l2"
+                    const val recordProfileViewsForViewedMeService = "r2"
                 }
 
                 object model {
                     private const val _model = "$_profileV2.model"
 
-                    const val Profile = "$_model.h"
+                    const val Profile = "$_model.Profile"
 
                     object Profile_ {
-                        const val getProfileId = "Z"
+                        const val getProfileId = "getProfileId"
                     }
                 }
             }
@@ -273,7 +335,7 @@ object Obfuscation {
                 const val BlockViewModel = "$_chat.BlockViewModel"
 
                 object ChatBaseFragmentV2_ {
-                    const val _canBeUnsent = "t1"
+                    const val _canBeUnsent = "B1"
                 }
 
                 object individual {
@@ -302,7 +364,7 @@ object Obfuscation {
         object view {
             private const val _view = Constants.GRINDR_PKG + ".view"
 
-            const val ExtendedProfileFieldView = "$_view.y4"
+            const val ExtendedProfileFieldView = "$_view.n5"
 
             object ExtendedProfileFieldView_ {
                 const val setLabel = "l"
@@ -316,7 +378,7 @@ object Obfuscation {
 
                 const val getCanSelectVariants = "getCanSelectVariants"
                 const val getDisableVariantSelection = "getDisableVariantSelection"
-                const val setTapType = "S"
+                const val setTapType = "k"
             }
         }
 
@@ -327,9 +389,11 @@ object Obfuscation {
 
             object ChatMessageManager_ {
                 const val handleIncomingChatMessage = "a"
+                const val handleOutgoingChatMessage = "j"
+
             }
 
-            const val ChatMarkersManager = "$_xmpp.i"
+            const val ChatMarkersManager = "$_xmpp.a"
 
             object ChatMarkersManager_ {
                 const val addDisplayedExtension = "d"

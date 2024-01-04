@@ -24,19 +24,30 @@ class Hooker : IXposedHookLoadPackage {
         if (lpparam.packageName != Constants.GRINDR_PKG) return
         pkgParam = lpparam
 
-        //This is a quick and dirty fix, but these should be called before the application context is created.
+        try {
+            Hooks.preventUpdates()
+        } catch (e: Exception) {
+            e.message?.let { Logger.xLog(it) }
+        }
 
-        /*try {
+        //This is a quick and dirty fix, but these should be called before the application context is created.
+        try {
             Hooks.storeChatMessageManager()
         } catch (e: Exception) {
             e.message?.let { Logger.xLog(it) }
-        }*/
+        }
 
-        /*try {
+        try {
+            Hooks.preventRecordProfileViews()
+        } catch (e: Exception) {
+            e.message?.let { Logger.xLog(it) }
+        }
+
+        try {
             Hooks.localSavedPhrases()
         } catch (e: Exception) {
             e.message?.let { Logger.xLog(it) }
-        }*/
+        }
 
         findAndHookMethod(
             Application::class.java,
@@ -53,11 +64,11 @@ class Hooker : IXposedHookLoadPackage {
                         return
                     }
 
-                    /*try {
+                    try {
                         Hooks.unlimitedProfiles()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
                     try {
                         Hooks.allowScreenshotsHook()
@@ -96,11 +107,11 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }*/
 
-                    /*try {
+                    try {
                         Hooks.unlimitedExpiringPhotos()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
                     /*try {
                         Hooks.unlimitedTaps()
@@ -108,17 +119,11 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }*/
 
-                    /*try {
+                    try {
                         Hooks.removeExpirationOnExpiringPhotos()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
-
-                    /*try {
-                        Hooks.preventRecordProfileViews()
-                    } catch (e: Exception) {
-                        e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
                     /*try {
                         Hooks.makeMessagesAlwaysRemovable()
@@ -126,11 +131,11 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }*/
 
-                    /*try {
+                    try {
                         Hooks.keepChatsOfBlockedProfiles()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
                     try {
                         Hooks.showBlocksInChat()
@@ -138,29 +143,29 @@ class Hooker : IXposedHookLoadPackage {
                         e.message?.let { Logger.xLog(it) }
                     }
 
-                    /*try {
+                    try {
                         Hooks.disableAutomaticMessageDeletion()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
-                    /*try {
+                    try {
                         Hooks.dontSendTypingIndicator()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
-                    /*try {
+                    try {
                         Hooks.dontSendChatMarkers()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
-                    /*try {
+                    try {
                         Hooks.useThreeColumnLayoutForFavorites()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }*/
+                    }
 
                     try {
                         Hooks.disableAnalytics()
@@ -172,20 +177,27 @@ class Hooker : IXposedHookLoadPackage {
                         Hooks.addExtraProfileFields()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
-                    }
+                    }*/
 
-                    try {
+                    /*try {
                         Hooks.allowSomeExperiments()
                     } catch (e: Exception) {
                         e.message?.let { Logger.xLog(it) }
                     }*/
+
+                    try {
+                        Hooks.createChatTerminal()
+                    } catch (e: Exception) {
+                        e.message?.let { Logger.xLog(it) }
+                    }
+
                 }
             }
         )
     }
 
     companion object {
-        const val TARGET_PKG_VERSION_NAME = "9.17.4"
+        const val TARGET_PKG_VERSION_NAME = "9.18.1"
 
         var pkgParam: LoadPackageParam by InitOnce()
         var appContext: Context by InitOnce()

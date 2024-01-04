@@ -19,25 +19,66 @@ import com.eljaviluki.grindrplus.Constants.Returns.RETURN_FALSE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_INTEGER_MAX_VALUE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_LONG_MAX_VALUE
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_TRUE
+import com.eljaviluki.grindrplus.Constants.Returns.RETURN_ZERO
 import com.eljaviluki.grindrplus.Constants.Returns.RETURN_UNIT
+import com.eljaviluki.grindrplus.Constants.Returns.RETURN_ONE
 import com.eljaviluki.grindrplus.Obfuscation.GApp
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge.hookMethod
+import de.robv.android.xposed.XposedHelpers
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers.*
 import java.io.File
 import java.lang.reflect.Proxy
 import java.util.*
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSession
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 
 object Hooks {
+
+    var ownProfileId: String? = null
+    var chatMessageManager: Any? = null
     /**
      * Allow screenshots in all the views of the application (including expiring photos, albums, etc.)
      *
      * Inspired in the project https://github.com/veeti/DisableFlagSecure
      * Credit and thanks to @veeti!
      */
+    fun preventUpdates() {
+        findAndHookMethod(
+            "com.google.android.play.core.appupdate.AppUpdateInfo",
+            Hooker.pkgParam.classLoader,
+            "updateAvailability",
+            RETURN_ONE
+        )
+
+        findAndHookConstructor(
+            "com.grindrapp.android.base.config.AppConfiguration",
+            Hooker.pkgParam.classLoader,
+            findClass("com.grindrapp.android.base.config.AppConfiguration.b", Hooker.pkgParam.classLoader),
+            findClass("com.grindrapp.android.base.config.AppConfiguration.f", Hooker.pkgParam.classLoader),
+            findClass("com.grindrapp.android.base.config.AppConfiguration.d", Hooker.pkgParam.classLoader),
+            findClass("com.grindrapp.android.base.config.AppConfiguration.e", Hooker.pkgParam.classLoader),
+            findClass("com.grindrapp.android.base.config.AppConfiguration.c", Hooker.pkgParam.classLoader),
+            findClass("com.grindrapp.android.base.config.AppConfiguration.a", Hooker.pkgParam.classLoader),
+            object : XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    setObjectField(param.thisObject, "a", "9.18.1")
+                    setObjectField(param.thisObject, "b", 119580 )
+                    setObjectField(param.thisObject, "u", "9.18.1.119580")
+                }
+            }
+        )
+    }
+
     fun allowScreenshotsHook() {
         findAndHookMethod(
             Window::class.java,
@@ -127,14 +168,14 @@ object Hooks {
                 ) //R.color.grindr_pure_white
 
                 override fun afterHookedMethod(param: MethodHookParam) {
-                    fieldsViewInstance = param.thisObject
+                        fieldsViewInstance = param.thisObject
 
-                    val profileId = callMethod(
-                        param.args[0],
-                        GApp.ui.profileV2.model.Profile_.getProfileId
-                    ) as String
+                        val profileId = callMethod(
+                            param.args[0],
+                            GApp.ui.profileV2.model.Profile_.getProfileId
+                        ) as String
 
-                    param.args[0]?.let {
+                        param.args[0]?.let {
                         //val profile = Profile(it)
                         addProfileFieldUi("Profile ID", profileId, 0).also { view ->
                             view.setOnLongClickListener {
@@ -245,7 +286,20 @@ object Hooks {
                 userSessionImpl,
                 GApp.storage.IUserSession_.hasFeature_feature,
                 class_Feature,
-                RETURN_TRUE
+                object :  XC_MethodReplacement() {
+                    override fun replaceHookedMethod(param: MethodHookParam): Any {
+                        // For whatever reason, enabling this feature causes the "Send Video"
+                        // button to disappear. This does not seem to affect screenshots so we
+                        // just disable this feature.
+                        if (param.args[0].toString() == "DisableScreenshot") {
+                            return false
+                        }
+                        if (param.args[0].toString() == "Incognito") {
+                            return false
+                        }
+                        return true
+                    }
+                }
             )
 
             findAndHookMethod(
@@ -263,13 +317,13 @@ object Hooks {
             findAndHookMethod(
                 userSessionImpl,
                 GApp.storage.IUserSession_.isXtra,
-                RETURN_TRUE
+                RETURN_FALSE
             )
 
             findAndHookMethod(
                 userSessionImpl,
                 GApp.storage.IUserSession_.isPlus,
-                RETURN_TRUE
+                RETURN_FALSE
             )
 
             findAndHookMethod(
@@ -321,7 +375,7 @@ object Hooks {
             RETURN_TRUE
         )
 
-        val class_IUserSession = findClass(
+        /*val class_IUserSession = findClass(
             GApp.storage.IUserSession,
             Hooker.pkgParam.classLoader
         )
@@ -331,10 +385,10 @@ object Hooks {
             GApp.model.Feature_.isGranted,
             class_IUserSession,
             RETURN_TRUE
-        )
+        )*/
 
-        /*findAndHookMethod(
-            "s5.g",
+        findAndHookMethod(
+            "u5.g",
             Hooker.pkgParam.classLoader,
             "isEnabled",
             object :  XC_MethodReplacement() {
@@ -342,29 +396,41 @@ object Hooks {
                     val feature = getObjectField(param.thisObject, "featureFlagName") as String
                     return when (feature) {
                         "profile-redesign-20230214" -> false
+                        "offer" -> true
                         "notification-action-chat-20230206" -> true
                         "gender-updates" -> true
-                        "gender-filter" -> true
                         "gender-exclusion" -> true
+                        "favorite-profile-notes-server" -> false
+                        "verbose-ad-analytics" -> false
                         "calendar-ui" -> true
                         "vaccine-profile-field" -> true
+                        "download-my-data" -> true
+                        "upgrade-prompt-interval" -> false
+                        "custom-dns" -> true
+                        "cookie-tap" -> false
+                        "takemehome-button" -> true
+                        "canceled-screen" -> true
                         "tag-search" -> true
                         "approximate-distance" -> true
+                        "store-default-product" -> false
                         "spectrum_solicitation_sex" -> true
                         "allow-mock-location" -> true
                         "spectrum-solicitation-of-drugs" -> true
-                        "reporting-lag-time" -> true
-                        "side-profile-link" -> true
                         "sift-kill-switch" -> true
-                        "canceled-screen" -> true
-                        "takemehome-button" -> true
-                        "download-my-data" -> true
+                        "side-profile-link" -> true
+                        "ads-quality-edu" -> false
+                        "ad-identifier" -> false
+                        "reporting-lag-time" -> true
+                        "intro-offer-free-trial-20221222" -> true
+                        "gender-filter" -> true
+                        "chat-interstitial" -> false
+                        "ad-backfill" -> false
                         "face-auth-android" -> true
                         else -> XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)
                     }
                 }
             }
-        )*/
+        )
 
         //Once you uncheck "precise", the option will disappear normally (not sure if that's a bug). This fix prevents that.
         findAndHookConstructor(
@@ -383,7 +449,7 @@ object Hooks {
             }
         )
 
-        /*val class_UpsellsV8 = findClass(
+        val class_UpsellsV8 = findClass(
             GApp.model.UpsellsV8,
             Hooker.pkgParam.classLoader
         )
@@ -415,7 +481,7 @@ object Hooks {
             class_Inserts,
             GApp.model.Inserts_.getMpuXtra,
             RETURN_ZERO
-        )*/
+        )
     }
 
     fun unlimitedProfiles() {
@@ -427,18 +493,18 @@ object Hooks {
             RETURN_TRUE
         )
 
-        //...and then just never ask for upsells
+        /*//...and then just never ask for upsells
         findAndHookMethod(
             "com.grindrapp.android.profile.experiments.InaccessibleProfileManager",
             Hooker.pkgParam.classLoader,
-            "c",
+            "b",
             Int::class.javaPrimitiveType,
             Int::class.javaObjectType,
             Int::class.javaObjectType,
             GApp.storage.IUserSession,
             "com.grindrapp.android.base.model.profile.ReferrerType",
             RETURN_FALSE
-        )
+        )*/
 
         //Remove all ads and upsells from the cascade
         findAndHookMethod(
@@ -645,7 +711,7 @@ object Hooks {
         )
 
         findAndHookMethod(
-            "com.grindrapp.android.ui.profileV2.ChatTapsQuickbarView",
+            "com.grindrapp.android.ui.profileV2.ProfileQuickbarView",
             Hooker.pkgParam.classLoader,
             "u",
             Boolean::class.javaPrimitiveType,
@@ -674,12 +740,38 @@ object Hooks {
     }
 
     fun preventRecordProfileViews() {
+
+        val ProfileRestServiceClass = findClass(
+            GApp.api.ProfileRestService, Hooker.pkgParam.classLoader)
+
+        val createSuccessResultConstructor = findConstructorExact(
+            "j7.a\$b", Hooker.pkgParam.classLoader, Any::class.java)
+
         findAndHookMethod(
-            GApp.ui.profileV2.ProfilesViewModel,
+            "retrofit2.Retrofit",
             Hooker.pkgParam.classLoader,
-            GApp.ui.profileV2.ProfilesViewModel_.recordProfileViewsForViewedMeService,
-            List::class.java,
-            XC_MethodReplacement.DO_NOTHING
+            "create",
+            Class::class.java,
+            object : XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    val service = param.result
+                    param.result = when {
+                        ProfileRestServiceClass.isInstance(service) -> {
+                            val invocationHandler = Proxy.getInvocationHandler(service)
+                            Proxy.newProxyInstance(Hooker.pkgParam.classLoader,
+                                arrayOf(ProfileRestServiceClass)) { proxy, method, args ->
+                                if (method.name in arrayOf(GApp.api.ProfileRestService_.logView, GApp.api.ProfileRestService_.logViews)) {
+                                    createSuccessResultConstructor.newInstance(Unit)
+                                } else {
+                                    invocationHandler.invoke(proxy, method, args)
+                                }
+                            }
+                        }
+                        else -> service
+                    }
+                }
+            }
+
         )
 
         findAndHookMethod(
@@ -740,8 +832,6 @@ object Hooks {
     }
     */
 
-    var chatMessageManager: Any? = null
-
     fun storeChatMessageManager() {
         XposedBridge.hookAllConstructors(
             findClass(
@@ -775,7 +865,7 @@ object Hooks {
                         GApp.persistence.model.ChatMessage_.getType
                     ) as String
                     val syntheticMessage = when (type) {
-                        "block" -> "[You have been blocked.]"
+                        "block" -> "[You have been blocked this profile]"
                         "unblock" -> "[You have been unblocked.]"
                         else -> null
                     }
@@ -803,8 +893,6 @@ object Hooks {
             GApp.persistence.model.ChatMessage,
             Hooker.pkgParam.classLoader
         )
-
-        var ownProfileId: String? = null
 
         findAndHookMethod(
             GApp.storage.UserSession,
@@ -879,23 +967,19 @@ object Hooks {
     }
 
     fun keepChatsOfBlockedProfiles() {
-        val ignoreIfBlockInteractor = object : XC_MethodReplacement() {
-            override fun replaceHookedMethod(param: MethodHookParam): Any {
-                //We still want to allow deleting chats etc.,
-                //so only ignore if BlockInteractor is calling
+        val ignoreIfBlockInteractor = object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                // We still want to allow deleting chats etc.,
+                // so only ignore if BlockInteractor is calling
                 val isBlockInteractor =
-                    Thread.currentThread().stackTrace.any {
-                        it.className.contains(GApp.manager.BlockInteractor) ||
-                                it.className.contains(GApp.ui.chat.BlockViewModel)
+                    Thread.currentThread().stackTrace.any { stackTraceElement ->
+                        GApp.manager.BlockInteractor.any {
+                            stackTraceElement.className.contains(it)
+                        } || stackTraceElement.className.contains(GApp.ui.chat.BlockViewModel)
                     }
                 if (isBlockInteractor) {
-                    return Unit
+                    param.result = null
                 }
-                return XposedBridge.invokeOriginalMethod(
-                    param.method,
-                    param.thisObject,
-                    param.args
-                )
             }
         }
 
@@ -926,6 +1010,7 @@ object Hooks {
             ignoreIfBlockInteractor
         )
 
+        // We just remove the "AND blocks.profileId is NULL" part to allow blocked profiles
         val queries = mapOf(
             "\n" +
                     "        SELECT * FROM conversation \n" +
@@ -983,12 +1068,8 @@ object Hooks {
         val class_PhrasesRestService =
             findClass(GApp.api.PhrasesRestService, Hooker.pkgParam.classLoader)
 
-        val createSuccessResult = findMethodExact(
-            GApp.network.either.ResultHelper,
-            Hooker.pkgParam.classLoader,
-            GApp.network.either.ResultHelper_.createSuccess,
-            Any::class.java
-        )
+        val createSuccessResult = findConstructorExact(
+            "j7.a\$b", Hooker.pkgParam.classLoader, Any::class.java)
 
         val constructor_AddSavedPhraseResponse = findConstructorExact(
             GApp.model.AddSavedPhraseResponse,
@@ -1033,7 +1114,7 @@ object Hooks {
                             .apply()
                         val response =
                             constructor_AddSavedPhraseResponse.newInstance(id.toString())
-                        createSuccessResult.invoke(null, response)
+                        createSuccessResult.newInstance(response)
                     }
                     GApp.api.ChatRestService_.deleteSavedPhrase -> {
                         val id = args[0] as String
@@ -1045,7 +1126,7 @@ object Hooks {
                             .remove("phrase_${id}_frequency")
                             .remove("phrase_${id}_timestamp")
                             .apply()
-                        createSuccessResult.invoke(null, Unit)
+                        createSuccessResult.newInstance(Unit)
                     }
                     GApp.api.ChatRestService_.increaseSavedPhraseClickCount -> {
                         val id = args[0] as String
@@ -1054,7 +1135,7 @@ object Hooks {
                         Hooker.sharedPref.edit()
                             .putInt("phrase_${id}_frequency", currentFrequency + 1)
                             .apply()
-                        createSuccessResult.invoke(null, Unit)
+                        createSuccessResult.newInstance(Unit)
                     }
                     else -> invocationHandler.invoke(proxy, method, args)
                 }
@@ -1094,7 +1175,7 @@ object Hooks {
                                 .toMap()
                         val phrasesResponse =
                             constructor_PhrasesResponse.newInstance(phrases)
-                        createSuccessResult.invoke(null, phrasesResponse)
+                        createSuccessResult.newInstance(phrasesResponse)
                     }
                     else -> invocationHandler.invoke(proxy, method, args)
                 }
@@ -1125,10 +1206,9 @@ object Hooks {
         val class_AnalyticsRestService =
             findClass(GApp.api.AnalyticsRestService, Hooker.pkgParam.classLoader)
 
-        val createSuccessResult = findMethodExact(
-            GApp.network.either.ResultHelper,
+        val constructor_createSuccessResult = findConstructorExact(
+            "j7.a\$b",
             Hooker.pkgParam.classLoader,
-            "h7.b::b",
             Any::class.java
         )
 
@@ -1148,7 +1228,7 @@ object Hooks {
                             ) { proxy, method, args ->
                                 //Just block all methods for now,
                                 //in the future we might need to differentiate if they change the service interface.
-                                createSuccessResult(Unit)
+                                constructor_createSuccessResult.newInstance(Unit)
                             }
                         }
                         else -> service
@@ -1159,34 +1239,40 @@ object Hooks {
     }
 
     fun useThreeColumnLayoutForFavorites() {
-        val R_id = findClass(
-            GApp.R.id,
-            Hooker.pkgParam.classLoader
+        val recyclerViewId = Hooker.appContext.resources.getIdentifier(
+            "fragment_favorite_recycler_view",
+            "id",
+            Hooker.pkgParam.packageName
         )
 
-        val recyclerViewId = getStaticIntField(
-            R_id,
-            GApp.R.id_.fragment_favorite_recycler_view
+        val profileDistanceId = Hooker.appContext.resources.getIdentifier(
+            "profile_distance",
+            "id",
+            Hooker.pkgParam.packageName
         )
-        val profileDistanceId = getStaticIntField(
-            R_id,
-            GApp.R.id_.profile_distance
+
+        val profileOnlineNowIconId = Hooker.appContext.resources.getIdentifier(
+            "profile_online_now_icon",
+            "id",
+            Hooker.pkgParam.packageName
         )
-        val profileOnlineNowIconId = getStaticIntField(
-            R_id,
-            GApp.R.id_.profile_online_now_icon
+
+        val profileLastSeenId = Hooker.appContext.resources.getIdentifier(
+            "profile_last_seen",
+            "id",
+            Hooker.pkgParam.packageName
         )
-        val profileLastSeenId = getStaticIntField(
-            R_id,
-            GApp.R.id_.profile_last_seen
+
+        val profileNoteIconId = Hooker.appContext.resources.getIdentifier(
+            "profile_note_icon",
+            "id",
+            Hooker.pkgParam.packageName
         )
-        val profileNoteIconId = getStaticIntField(
-            R_id,
-            GApp.R.id_.profile_note_icon
-        )
-        val profileDisplayNameId = getStaticIntField(
-            R_id,
-            GApp.R.id_.profile_display_name
+
+        val profileDisplayNameId = Hooker.appContext.resources.getIdentifier(
+            "profile_display_name",
+            "id",
+            Hooker.pkgParam.packageName
         )
 
         val Constructor_LayoutParamsRecyclerView = findConstructorExact(
@@ -1207,7 +1293,8 @@ object Hooks {
                     val view = param.args[0] as View
                     val recyclerView = view.findViewById<View>(recyclerViewId)
                     val gridLayoutManager = callMethod(recyclerView, "getLayoutManager")
-                    callMethod(gridLayoutManager, "setSpanCount", 3)
+                    val NUMBER_OF_COLS = 3
+                    callMethod(gridLayoutManager, "setSpanCount", NUMBER_OF_COLS)
 
                     val adapter = callMethod(recyclerView, "getAdapter")
 
@@ -1220,7 +1307,7 @@ object Hooks {
                             override fun afterHookedMethod(param: MethodHookParam) {
                                 //Adjust grid item size
                                 val size =
-                                    Hooker.appContext.resources.displayMetrics.widthPixels / 3
+                                    Hooker.appContext.resources.displayMetrics.widthPixels / NUMBER_OF_COLS
                                 val rootLayoutParams =
                                     Constructor_LayoutParamsRecyclerView.newInstance(
                                         size,
@@ -1308,21 +1395,20 @@ object Hooks {
 
     fun dontSendChatMarkers() {
         findAndHookMethod(
-            GApp.xmpp.ChatMarkersManager,
+            "org.jivesoftware.smack.AbstractXMPPConnection",
             Hooker.pkgParam.classLoader,
-            GApp.xmpp.ChatMarkersManager_.addDisplayedExtension,
-            "org.jivesoftware.smack.chat2.Chat",
-            "org.jivesoftware.smack.packet.Message",
-            XC_MethodReplacement.DO_NOTHING
-        )
-        findAndHookMethod(
-            GApp.xmpp.ChatMarkersManager,
-            Hooker.pkgParam.classLoader,
-            GApp.xmpp.ChatMarkersManager_.addReceivedExtension,
-            "org.jivesoftware.smack.chat2.Chat",
-            "org.jivesoftware.smack.packet.Message",
-            XC_MethodReplacement.DO_NOTHING
-        )
+            "sendStanza",
+            "org.jivesoftware.smack.packet.Stanza",
+            object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    val stanza = param.args[0]
+                    val hasReceivedExtension = callMethod(stanza, "hasExtension", "received", "urn:xmpp:chat-markers:0") as Boolean
+                    val hasDisplayedExtension = callMethod(stanza, "hasExtension", "displayed", "urn:xmpp:chat-markers:0") as Boolean
+                    if (hasReceivedExtension || hasDisplayedExtension) {
+                        param.result = null
+                    }
+                }
+            })
     }
 
     fun dontSendTypingIndicator() {
@@ -1336,6 +1422,79 @@ object Hooks {
         )
     }
 
+    /**
+     * Creates a local terminal which can be used to execute commands
+     * in any chat by using the '/' prefix.
+     */
+    fun createChatTerminal() {
+        val sendChatMessage = findMethodExact(
+            GApp.xmpp.ChatMessageManager,
+            Hooker.pkgParam.classLoader,
+            GApp.xmpp.ChatMessageManager_.handleOutgoingChatMessage,
+            findClass("hc.p0", Hooker.pkgParam.classLoader), // ChatWrapper
+        )
+
+        hookMethod(sendChatMessage, object : XC_MethodHook() {
+            override fun beforeHookedMethod(param: MethodHookParam) {
+                val chatMessage = getObjectField(param.args[0], "a")
+                val text = getObjectField(chatMessage, "body") as String
+                val recipient = getObjectField(chatMessage, "recipient") as String
+
+                if (text.startsWith("/")) {
+                    param.result = null // Prevents the command from being sent as a message
+                    val commandHandler = CommandHandler(recipient)
+                    commandHandler.handleCommand(text.substring(1))
+                }
+            }
+        })
+
+    }
+
     val regex = Regex("([0-9]+\\.[0-9]+),([0-9]+\\.[0-9]+)")
+
+    /*
+    DO NOT ENABLE THIS IN PRODUCTION BUILDS!
+    This methods disables OkHttp's certificate pinning trusts all certificate.
+    Useful for analyzing network traffic with tools like mitmproxy.
+    THIS COMPLETELY MITIGATES ANY SECURITY AND SHOULD NOT BE USED IN PRODUCTION
+     */
+    fun trustAllCerts() {
+        XposedHelpers.findAndHookConstructor(
+            "okhttp3.OkHttpClient\$Builder",
+            Hooker.pkgParam.classLoader,
+            object : XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    val trustAlLCerts = arrayOf<TrustManager>(object : X509TrustManager {
+                        override fun checkClientTrusted(
+                            chain: Array<out X509Certificate>?,
+                            authType: String?
+                        ) {
+                        }
+
+                        override fun checkServerTrusted(
+                            chain: Array<out X509Certificate>?,
+                            authType: String?
+                        ) {
+                        }
+
+                        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+
+                    })
+                    val sslContext = SSLContext.getInstance("TLSv1.3")
+                    sslContext.init(null, trustAlLCerts, SecureRandom())
+                    callMethod(param.thisObject, "sslSocketFactory", sslContext.socketFactory, trustAlLCerts.first() as X509TrustManager)
+                    callMethod(param.thisObject, "hostnameVerifier", object : HostnameVerifier {
+                        override fun verify(hostname: String?, session: SSLSession?): Boolean = true
+                    })
+                }
+            })
+
+        findAndHookMethod(
+            "okhttp3.OkHttpClient\$Builder",
+            Hooker.pkgParam.classLoader,
+            "certificatePinner",
+            "okhttp3.CertificatePinner",
+            XC_MethodReplacement.DO_NOTHING)
+    }
 
 }
